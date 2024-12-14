@@ -1,1 +1,1 @@
-GITHUB_REPO_NAME = "Renaissance-Notes"
+GITHUB_REPO_NAME = "EoWAutomater"
