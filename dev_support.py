@@ -1,19 +1,18 @@
 from pydantic_ai import Agent
-from dataclasses import dataclass
-from changes.changes import GitChanges
+from dataclasses import dataclass, field
+from changes.gitchanges import GitChanges
 from pydantic import BaseModel, Field
 from pydantic_ai import RunContext
-from template import  raw_template
+from template import WeeklyUpdate
 
 @dataclass
 class SupportDependencies:  
-    changes: GitChanges
-    template: str = raw_template
+    changes: GitChanges = GitChanges()
+    template: dict = field(default_factory=WeeklyUpdate().model_dump)
 
 class SupportResult(BaseModel):  
 
-    report: str = Field(description="report")
-    key_changes: str = Field(description='Changes made')
+    report: WeeklyUpdate = Field(description="report")
     importance: bool = Field(description="importance of these changes")
     value: int = Field(description='value of these changes', ge=0, le=10)
 
@@ -28,15 +27,18 @@ dev_support_agent = Agent(
 
     system_prompt=(  
         'You are a developer support staff'
-        'With these git changes for each commit, create a progress report with the template that outlines these changes,'
-        'their importance, and a value from 1-10 for their effort'
+        'With these git changes for each commit'
+        'create a progress report with the template structure that outlines these changes,'
+        "the progress section should have all the changes in a human readable way, not too technical"
+        "the importance section should identify why these changes are necessary and evaluation of these changes,"
+        "and value fhould range from 1-10 for their effort"
     ),
 )
 
 @dev_support_agent.tool
 def get_template(
     ctx: RunContext[SupportDependencies]
-) -> str:
+) -> WeeklyUpdate:
     return ctx.deps.template
 
 @dev_support_agent.tool  
@@ -45,4 +47,11 @@ async def git_changes(
 ) -> str:
     """Returns the changes of the github repo"""  
     return await ctx.deps.changes.get_changes()
+
+@dev_support_agent.tool  
+async def git_last_week_changes(
+    ctx: RunContext[SupportDependencies]
+) -> str:
+    """Returns the changes of the github repo"""  
+    return await ctx.deps.changes.get_last_weeks_changes()
 

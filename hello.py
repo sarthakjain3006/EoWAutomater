@@ -1,10 +1,14 @@
 import asyncio
 from dev_support import SupportDependencies, dev_support_agent
-from changes.changes import GitChanges
+from changes.gitchanges import GitChanges
 
 async def main():
-    deps = SupportDependencies(changes=GitChanges())
-    result = await dev_support_agent.run('What is my report?', deps=deps)  
+    git_changes_instance = GitChanges()
+    await git_changes_instance.get_changes()
+
+    # Pass the GitChanges instance to SupportDependencies
+    deps = SupportDependencies(changes=git_changes_instance)
+    result = await dev_support_agent.run('What is my report for last week?', deps=deps)  
     print(result.data)  
 
 
