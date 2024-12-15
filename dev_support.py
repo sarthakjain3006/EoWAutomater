@@ -29,7 +29,7 @@ dev_support_agent = Agent(
         'You are a developer support staff'
         'With these git changes for each commit'
         'create a progress report with the template structure that outlines these changes,'
-        "the progress section should have all the changes in a human readable way, not too technical"
+        "the progress section should have all the changes in a human readable way, as a list of changes, where each change corresponds to the changes in the commit as well as taking into account the commit message"
         "the importance section should identify why these changes are necessary and evaluation of these changes,"
         "and value fhould range from 1-10 for their effort"
     ),
@@ -38,7 +38,7 @@ dev_support_agent = Agent(
 @dev_support_agent.tool
 def get_template(
     ctx: RunContext[SupportDependencies]
-) -> WeeklyUpdate:
+) -> dict:
     return ctx.deps.template
 
 @dev_support_agent.tool  

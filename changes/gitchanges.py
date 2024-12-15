@@ -8,31 +8,36 @@ class GitChanges():
         self.repo_path = f'./repo-collection/{GITHUB_REPO_NAME}/'
         self.repo_url = f'https://github.com/sarthakjain3006/{GITHUB_REPO_NAME}.git'
 
-    async def get_changes(self):
-        res = ""
+    def _stash_and_pull(self, repo):
+        """Stash local changes and pull remote changes."""
+        try:
+            # Stash local changes if any
+            if repo.is_dirty(untracked_files=True):
+                repo.git.stash('save', '--include-untracked')
+                print("Stashed local changes.")
 
+            # Pull remote changes
+            repo.git.pull()
+            print("Pulled latest changes.")
+        except Exception as e:
+            print(f"Error during pull: {e}")
+
+    async def get_changes(self):
         # Initialize or fetch the repository
         repo, status = self._initialize_or_fetch_repo()
-        res += status
+        print(status)
         if not repo:
-            return res
+            return status
 
         # Iterate through branches
         for branch_name in self._get_branch_names(repo):
-            res += f"Checking branch: {branch_name}\n"
-
-            # Checkout the branch
+            print(f"Checking branch: {branch_name}")
             repo.git.checkout(branch_name)
 
-            # Pull latest changes
-            res += f"Pulling latest changes for branch: {branch_name}\n"
-            repo.git.pull()
+            # Handle local changes and pull
+            self._stash_and_pull(repo)
 
-            # Process commits and diffs
-            res += f"Processing commits for branch: {branch_name}\n"
-            res += self._process_commits(repo, branch_name)
-
-        return res
+        return "Changes processed."
 
     async def get_last_weeks_changes(self):
         res = ""
@@ -65,7 +70,7 @@ class GitChanges():
 
         return res
 
-    def _initialize_or_fetch_repo(self):
+    def _initialize_or_fetch_repo(self) -> tuple[Repo, str]:
         if os.path.exists(self.repo_path):
             try:
                 repo = Repo(self.repo_path)
