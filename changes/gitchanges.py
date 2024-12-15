@@ -1,4 +1,4 @@
-import asyncio
+
 from git import Repo, InvalidGitRepositoryError
 import os
 from datetime import datetime, timedelta, timezone
@@ -22,7 +22,7 @@ class GitChanges():
         except Exception as e:
             print(f"Error during pull: {e}")
 
-    async def get_changes(self):
+    def get_changes(self):
         # Initialize or fetch the repository
         repo, status = self._initialize_or_fetch_repo()
         print(status)
@@ -39,7 +39,7 @@ class GitChanges():
 
         return "Changes processed."
 
-    async def get_last_weeks_changes(self):
+    def get_last_weeks_changes(self):
         res = ""
 
         # Initialize or fetch the repository
@@ -111,8 +111,7 @@ class GitChanges():
             else:
                 res += "Initial commit. No diffs available.\n"
                 res += "=" * 50 + "\n"
-        print(res)
         return res
     
 if __name__ == "__main__":
-    asyncio.run(GitChanges().get_last_weeks_changes())
+    GitChanges().get_last_weeks_changes()
